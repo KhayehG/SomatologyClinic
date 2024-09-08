@@ -1,0 +1,110 @@
+﻿@model IEnumerable<SomatologyClinic.Data.ApplicationUser>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Admin Dashboard</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-blue-500 text-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-semibold">Total Users</h2>
+                    <p class="text-4xl font-bold">@Model.Count()</p>
+                </div>
+                <i class="fas fa-users text-5xl opacity-50"></i>
+            </div>
+        </div>
+        <div class="bg-green-500 text-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-semibold">Students</h2>
+                    <p class="text-4xl font-bold">@Model.Count(u => u.Email.EndsWith("@dut4life.ac.za"))</p>
+                </div>
+                <i class="fas fa-user-graduate text-5xl opacity-50"></i>
+            </div>
+        </div>
+        <div class="bg-yellow-500 text-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-semibold">Staff</h2>
+                    <p class="text-4xl font-bold">@Model.Count(u => u.Email.EndsWith("@dut.ac.za"))</p>
+                </div>
+                <i class="fas fa-user-tie text-5xl opacity-50"></i>
+            </div>
+        </div>
+        <div class="bg-red-500 text-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-semibold">Customers</h2>
+                    <p class="text-4xl font-bold">@Model.Count(u => !u.Email.EndsWith("@dut4life.ac.za") && !u.Email.EndsWith("@dut.ac.za"))</p>
+                </div>
+                <i class="fas fa-user-friends text-5xl opacity-50"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-semibold">User Management</h2>
+            <a href="@Url.Action("Create")" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-plus mr-2"></i>Create New User
+            </a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                        <th class="py-3 px-6 text-left">Name</th>
+                        <th class="py-3 px-6 text-left">Email</th>
+                        <th class="py-3 px-6 text-center">Role</th>
+                        <th class="py-3 px-6 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 text-sm font-light">
+                    @foreach (var user in Model)
+                    {
+                        <tr class="border-b border-gray-200 hover:bg-gray-100">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <span class="font-medium">@user.FirstName @user.LastName</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-6 text-left">
+                                <span>@user.Email</span>
+                            </td>
+                            <td class="py-3 px-6 text-center">
+                                @if (user.Email.EndsWith("@dut4life.ac.za"))
+                                {
+                                    <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Student</span>
+                                }
+                                else if (user.Email.EndsWith("@dut.ac.za"))
+                                {
+                                    <span class="bg-yellow-200 text-yellow-600 py-1 px-3 rounded-full text-xs">Staff</span>
+                                }
+                                else
+                                {
+                                    <span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs">Customer</span>
+                                }
+                            </td>
+                            <td class="py-3 px-6 text-center">
+                                <div class="flex item-center justify-center">
+                                    <a href="@Url.Action("Edit", new { id = user.Id })" class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="@Url.Action("Details", new { id = user.Id })" class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("Delete", new { id = user.Id })" class="w-4 mr-2 transform hover:text-red-500 hover:scale-110">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

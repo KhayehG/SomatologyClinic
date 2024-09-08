@@ -1,0 +1,43 @@
+﻿@model SomatologyClinic.Models.Appointment
+
+@{
+    ViewData["Title"] = "Appointment Details";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Appointment Details</h1>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">User</dt>
+                <dd class="mt-1 text-sm text-gray-900">@Model.User.FirstName @Model.User.LastName</dd>
+            </div>
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">Treatment</dt>
+                <dd class="mt-1 text-sm text-gray-900">@Model.Treatment.Name</dd>
+            </div>
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">Appointment Date</dt>
+                <dd class="mt-1 text-sm text-gray-900">@Model.AppointmentDate.ToString("g")</dd>
+            </div>
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">Status</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                    @if (Model.IsApproved)
+                    {
+                        <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Approved</span>
+                    }
+                    else
+                    {
+                        <span class="bg-yellow-200 text-yellow-600 py-1 px-3 rounded-full text-xs">Pending</span>
+                    }
+                </dd>
+            </div>
+        </dl>
+        <div class="mt-8 flex items-center space-x-4">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Edit</a>
+            <a asp-action="Index" class="text-blue-500 hover:text-blue-600 font-bold">Back to List</a>
+        </div>
+    </div>
+</div>

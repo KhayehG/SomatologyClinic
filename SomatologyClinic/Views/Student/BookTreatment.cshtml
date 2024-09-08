@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "Book a Treatment";
+    Layout = "_Layout";
+}
+<div class="container mx-auto px-4 py-8" x-data="bookingApp()">
+    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Book a Treatment</h2>
+
+    <div x-show="!selectedTreatment" class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h3 class="text-xl font-semibold mb-4 text-gray-700">Step 1: Select a Treatment</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <template x-for="treatment in treatments" :key="treatment.id">
+                <div class="border rounded-lg p-4 cursor-pointer transition-all duration-200 ease-in-out flex flex-col items-center"
+                     :class="{'border-blue-500 bg-blue-50': selectedTreatment === treatment.id, 'hover:border-gray-300': selectedTreatment !== treatment.id}"
+                     @@click="selectTreatment(treatment.id)">
+                    <span class="material-icons text-4xl mb-2 text-blue-600" x-text="treatment.icon || 'spa'"></span>
+                    <p class="text-sm font-medium text-gray-800 text-center" x-text="treatment.name"></p>
+                    <p class="text-sm font-medium text-gray-600 text-center" x-text="'R' + treatment.price.toFixed(2)"></p>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <div x-show="selectedTreatment" class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-semibold mb-4 text-gray-700">Step 2: Select Date and Time</h3>
+        <p class="mb-2">Selected Treatment: <span x-text="getSelectedTreatmentName()" class="font-semibold"></span></p>
+        <p class="mb-4">Price: <span x-text="'R' + getSelectedTreatmentPrice()" class="font-semibold"></span></p>
+        <button @@click="selectedTreatment = null" class="mb-4 text-blue-600 hover:text-blue-800">Change Treatment</button>
+        <input type="text"
+               x-ref="datepicker"
+               x-model="bookingDateTime"
+               class="w-full p-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Select date and time">
+        <button @@click="bookTreatment"
+                class="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                :disabled="!bookingDateTime"
+                :class="{'opacity-50 cursor-not-allowed': !bookingDateTime}">
+            Book Treatment
+        </button>
+    </div>
+
+    <form id="treatmentForm" method="post" asp-action="BookTreatment" asp-controller="Student">
+        <input type="hidden" name="TreatmentId" :value="selectedTreatment">
+        <input type="hidden" name="BookingDateTime" :value="bookingDateTime">
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+        function bookingApp() {
+            return {
+                treatments: JSON.parse('@Html.Raw(Json.Serialize(ViewBag.Treatments))'),
+                selectedTreatment: null,
+                bookingDateTime: null,
+                init() {
+                    this.$watch('selectedTreatment', () => {
+                        if (this.selectedTreatment) {
+                            this.$nextTick(() => {
+                                flatpickr(this.$refs.datepicker, {
+                                    enableTime: true,
+                                    dateFormat: "Y-m-d H:i",
+                                    minDate: "today",
+                                    maxDate: new Date().fp_incr(30),
+                                    minTime: "09:00",
+                                    maxTime: "17:00",
+                                    disable: [
+                                        function (date) {
+                                            return (date.getDay() === 0 || date.getDay() === 6);
+                                        }
+                                    ],
+                                    onChange: (selectedDates, dateStr) => {
+                                        this.bookingDateTime = dateStr;
+                                    }
+                                });
+                            });
+                        }
+                    });
+                },
+                selectTreatment(id) {
+                    this.selectedTreatment = id;
+                    this.bookingDateTime = null; // Reset date when changing treatment
+                },
+                getSelectedTreatmentName() {
+                    return this.treatments.find(t => t.id === this.selectedTreatment)?.name || '';
+                },
+                getSelectedTreatmentPrice() {
+                    return this.treatments.find(t => t.id === this.selectedTreatment)?.price.toFixed(2) || '0.00';
+                },
+                bookTreatment() {
+                    if (this.selectedTreatment && this.bookingDateTime) {
+                        document.getElementById('treatmentForm').submit();
+                    } else {
+                        alert('Please select a treatment and date/time.');
+                    }
+                }
+            }
+        }
+    </script>
+}

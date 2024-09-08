@@ -1,0 +1,239 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using SomatologyClinic.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SomatologyClinic</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SomatologyClinic.styles.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">SomatologyClinic</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Admin Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Treatment" asp-action="Index">Manage Treatments</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("Staff"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Staff Menu
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="Dashboard">Dashboard</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Booking" asp-action="ManageBookings">Manage Bookings</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="TreatmentManagement">Manage Treatments</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="CustomerManagement">Manage Customers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="BookingCalendar">Booking Calendar</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="Reports">Reports</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="BookingStatistics">Booking Statistics</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Staff" asp-action="RevenueReport">Revenue Report</a></li>
+                                    </ul>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Student") || User.IsInRole("Customer"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Booking" asp-action="Index">My Bookings</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Booking" asp-action="Create">Book Treatment</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("Student"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Student Menu
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="studentDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Student" asp-action="Dashboard">Student Dashboard</a>
+                                        <li><a class="dropdown-item" asp-controller="Student" asp-action="SelectTreatment">Select Treatment</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Student" asp-action="MyBookings">My Bookings</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Student" asp-action="TreatmentHistory">Treatment History</a></li>
+                                    </ul>
+                                </li>
+
+                            }
+
+                            @if (User.IsInRole("Customer"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Index">Customer Dashboard</a>
+                                </li>
+                            }
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="bg-blue-100 p-4 rounded-lg shadow mb-4">
+                        <h2 class="text-2xl font-bold mb-2">Admin Dashboard</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">User Management</h3>
+                                <a href="@Url.Action("Index", "Admin")" class="text-blue-600 hover:text-blue-800">Manage Users</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Bookings</h3>
+                                <a href="@Url.Action("Bookings", "Admin")" class="text-blue-600 hover:text-blue-800">View All Bookings</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Staff Actions</h3>
+                                <a href="@Url.Action("StaffActions", "Admin")" class="text-blue-600 hover:text-blue-800">View Staff Actions</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Treatments</h3>
+                                <a href="@Url.Action("Index", "Treatment")" class="text-blue-600 hover:text-blue-800">Manage Treatments</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                else if (User.IsInRole("Staff"))
+                {
+                    <div class="bg-green-100 p-4 rounded-lg shadow mb-4">
+                        <h2 class="text-2xl font-bold mb-2">Staff Dashboard</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Bookings</h3>
+                                <a href="@Url.Action("ManageBookings", "Booking")" class="text-green-600 hover:text-green-800">Manage Bookings</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Treatments</h3>
+                                <a href="@Url.Action("TreatmentManagement", "Staff")" class="text-green-600 hover:text-green-800">Manage Treatments</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Customers</h3>
+                                <a href="@Url.Action("CustomerManagement", "Staff")" class="text-green-600 hover:text-green-800">Manage Customers</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Booking Calendar</h3>
+                                <a href="@Url.Action("BookingCalendar", "Staff")" class="text-green-600 hover:text-green-800">View Calendar</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Reports</h3>
+                                <a href="@Url.Action("Reports", "Staff")" class="text-green-600 hover:text-green-800">View Reports</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Statistics</h3>
+                                <a href="@Url.Action("BookingStatistics", "Staff")" class="text-green-600 hover:text-green-800">Booking Statistics</a>
+                                <br>
+                                <a href="@Url.Action("RevenueReport", "Staff")" class="text-green-600 hover:text-green-800">Revenue Report</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                else if (User.IsInRole("Student"))
+                {
+                    <div class="bg-yellow-100 p-4 rounded-lg shadow mb-4">
+                        <h2 class="text-2xl font-bold mb-2">Student Dashboard</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Upcoming Bookings</h3>
+                                <a asp-controller="Student" asp-action="MyBookings" class="text-yellow-600 hover:text-yellow-800">View My Bookings</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Book a Treatment</h3>
+                                <a asp-controller="Student" asp-action="SelectTreatment" class="text-yellow-600 hover:text-yellow-800">Select Treatment</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Treatment History</h3>
+                                <a asp-controller="Student" asp-action="TreatmentHistory" class="text-yellow-600 hover:text-yellow-800">View History</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">My Profile</h3>
+                                <a asp-controller="Student" asp-action="Profile" class="text-yellow-600 hover:text-yellow-800">Update Profile</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+
+                else if (User.IsInRole("Customer"))
+                {
+                    <div class="bg-purple-100 p-4 rounded-lg shadow mb-4">
+                        <h2 class="text-2xl font-bold mb-2">Customer Dashboard</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">My Appointments</h3>
+                                <a href="#" class="text-purple-600 hover:text-purple-800">View Appointments</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Book a Treatment</h3>
+                                <a href="#" class="text-purple-600 hover:text-purple-800">Book Now</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">My Profile</h3>
+                                <a href="#" class="text-purple-600 hover:text-purple-800">Update Profile</a>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow">
+                                <h3 class="font-semibold mb-2">Treatment History</h3>
+                                <a href="#" class="text-purple-600 hover:text-purple-800">View History</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2024 - SomatologyClinic - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

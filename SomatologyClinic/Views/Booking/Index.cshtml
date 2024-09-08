@@ -1,0 +1,52 @@
+﻿@model IEnumerable<SomatologyClinic.Models.Booking>
+
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">My Bookings</h1>
+
+    <p class="mb-4">
+        <a asp-action="Create" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Book New Treatment</a>
+    </p>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <table class="min-w-full">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Treatment</th>
+                    <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Date and Time</th>
+                    <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Staff Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
+                            @Html.DisplayFor(modelItem => item.Treatment.Name)
+                        </td>
+                        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
+                            @Html.DisplayFor(modelItem => item.BookingDateTime)
+                        </td>
+                        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
+                            @{
+                                var statusClass = item.Status == BookingStatus.Approved ? "bg-green-200 text-green-800" :
+                                item.Status == BookingStatus.Rejected ? "bg-red-200 text-red-800" :
+                                "bg-yellow-200 text-yellow-800";
+                            }
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full @statusClass">
+                                @Html.DisplayFor(modelItem => item.Status)
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
+                            @Html.DisplayFor(modelItem => item.StaffNotes)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

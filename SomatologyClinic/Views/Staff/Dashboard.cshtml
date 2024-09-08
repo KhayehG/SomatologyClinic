@@ -1,0 +1,56 @@
+﻿@using SomatologyClinic.Models.ViewModels
+
+@model StaffDashboardViewModel
+
+<h2>Staff Dashboard</h2>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Pending Bookings</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.PendingBookingsCount</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Today's Bookings</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.TodayBookingsCount</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-header">Total Customers</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.TotalCustomersCount</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header">Total Treatments</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.TotalTreatmentsCount</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h3>Quick Actions</h3>
+        <ul class="list-group">
+            <li class="list-group-item"><a asp-action="ManageBookings" asp-controller="Booking">Manage Bookings</a></li>
+            <li class="list-group-item"><a asp-action="TreatmentManagement">Manage Treatments</a></li>
+            <li class="list-group-item"><a asp-action="CustomerManagement">Manage Customers</a></li>
+            <li class="list-group-item"><a asp-action="Reports">View Reports</a></li>
+        </ul>
+    </div>
+    <div class="col-md-6">
+        <h3>Recent Activity</h3>
+        <!-- Add a partial view for recent activity here -->
+    </div>
+</div>

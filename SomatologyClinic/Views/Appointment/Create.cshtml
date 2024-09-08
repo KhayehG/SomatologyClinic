@@ -1,0 +1,67 @@
+﻿@model SomatologyClinic.Models.Appointment
+
+@{
+    ViewData["Title"] = "Create Appointment";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Create New Appointment</h1>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
+
+            <div class="mb-4">
+                <label asp-for="UserId" class="block text-gray-700 text-sm font-bold mb-2">Client</label>
+                <select asp-for="UserId" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" asp-items="ViewBag.UserId">
+                    <option value="">-- Select Client --</option>
+                </select>
+                <span asp-validation-for="UserId" class="text-red-500 text-xs italic"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="TreatmentId" class="block text-gray-700 text-sm font-bold mb-2">Treatment</label>
+                <select asp-for="TreatmentId" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" asp-items="ViewBag.TreatmentId">
+                    <option value="">-- Select Treatment --</option>
+                </select>
+                <span asp-validation-for="TreatmentId" class="text-red-500 text-xs italic"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="AppointmentDate" class="block text-gray-700 text-sm font-bold mb-2">Appointment Date and Time</label>
+                <input asp-for="AppointmentDate" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" type="text" id="appointmentDatePicker" />
+                <span asp-validation-for="AppointmentDate" class="text-red-500 text-xs italic"></span>
+            </div>
+
+            <div class="flex items-center justify-between mt-8">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                    Create Appointment
+                </button>
+                <a asp-action="Index" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                    Back to List
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            flatpickr("#appointmentDatePicker", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                time_24hr: true,
+                minuteIncrement: 15,
+                onChange: function (selectedDates, dateStr, instance) {
+                    document.getElementById('AppointmentDate').value = dateStr;
+                }
+            });
+        });
+    </script>
+}

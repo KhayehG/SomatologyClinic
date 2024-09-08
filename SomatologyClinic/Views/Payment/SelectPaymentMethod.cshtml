@@ -1,0 +1,83 @@
+﻿@model PaymentViewModel
+
+<div class="container mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Select Payment Method</h2>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="mb-6">
+            <p class="mb-2"><strong class="text-gray-700">Treatment:</strong> <span class="text-gray-900">@Model.TreatmentName</span></p>
+            <p class="mb-2"><strong class="text-gray-700">Date:</strong> <span class="text-gray-900">@Model.BookingDateTime.ToString("g")</span></p>
+            <p class="mb-2"><strong class="text-gray-700">Amount:</strong> <span class="text-gray-900 font-semibold">R @Model.Amount.ToString("F2")</span></p>
+        </div>
+
+        <form asp-action="ProcessPayment" method="post">
+            <input type="hidden" asp-for="BookingId" />
+            <input type="hidden" asp-for="TreatmentName" />
+            <input type="hidden" asp-for="Amount" />
+            <input type="hidden" asp-for="BookingDateTime" />
+
+            <div class="mb-4">
+                <label asp-for="SelectedPaymentMethod" class="block text-gray-700 text-sm font-bold mb-2">Payment Method</label>
+                <select asp-for="SelectedPaymentMethod" class="form-select mt-1 block w-full" required>
+                    <option value="">Select a payment method</option>
+                    <option value="GooglePay">Google Pay</option>
+                    <option value="ApplePay">Apple Pay</option>
+                    <option value="PayFast">PayFast</option>
+                    <option value="PayFlex">PayFlex (Buy Now, Pay Later)</option>
+                    <option value="Cash">Cash (Test)</option>
+                </select>
+            </div>
+
+            <div id="paymentTokenField" class="mb-4 hidden">
+                <label asp-for="PaymentToken" class="block text-gray-700 text-sm font-bold mb-2">Payment Token</label>
+                <input asp-for="PaymentToken" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            </div>
+
+            <div id="installmentsField" class="mb-4 hidden">
+                <label asp-for="Installments" class="block text-gray-700 text-sm font-bold mb-2">Number of Installments</label>
+                <select asp-for="Installments" class="form-select mt-1 block w-full">
+                    <option value="3">3 months</option>
+                    <option value="6">6 months</option>
+                    <option value="12">12 months</option>
+                </select>
+            </div>
+
+            <div class="mt-6">
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded transition duration-200">
+                    Proceed with Payment
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a asp-controller="Student" asp-action="SelectTreatment" class="text-blue-500 hover:text-blue-600 font-semibold">
+            Back to Treatment Selection
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const paymentMethodSelect = document.getElementById('SelectedPaymentMethod');
+            const paymentTokenField = document.getElementById('paymentTokenField');
+            const installmentsField = document.getElementById('installmentsField');
+
+            paymentMethodSelect.addEventListener('change', function () {
+                if (this.value === 'GooglePay' || this.value === 'ApplePay' || this.value === 'PayFast') {
+                    paymentTokenField.classList.remove('hidden');
+                } else {
+                    paymentTokenField.classList.add('hidden');
+                }
+
+                if (this.value === 'PayFlex') {
+                    installmentsField.classList.remove('hidden');
+                } else {
+                    installmentsField.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+}
+

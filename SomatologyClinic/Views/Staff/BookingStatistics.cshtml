@@ -1,0 +1,78 @@
+﻿
+@using SomatologyClinic.Models.ViewModels
+
+
+@model BookingStatisticsViewModel
+
+
+<h2>Booking Statistics</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Total Bookings</h5>
+                <p class="card-text display-4">@Model.TotalBookings</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h3>Popular Treatments</h3>
+        <canvas id="popularTreatmentsChart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <h3>Bookings by Day of Week</h3>
+        <canvas id="bookingsByDayChart"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Popular Treatments Chart
+        var popularTreatmentsCtx = document.getElementById('popularTreatmentsChart').getContext('2d');
+        var popularTreatmentsChart = new Chart(popularTreatmentsCtx, {
+            type: 'bar',
+            data: {
+                labels: @Json.Serialize(Model.PopularTreatments.Select(t => t.Name)),
+                datasets: [{
+                    label: 'Number of Bookings',
+                    data: @Json.Serialize(Model.PopularTreatments.Select(t => t.Count)),
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Bookings by Day of Week Chart
+        var bookingsByDayCtx = document.getElementById('bookingsByDayChart').getContext('2d');
+        var bookingsByDayChart = new Chart(bookingsByDayCtx, {
+            type: 'line',
+            data: {
+                labels: @Json.Serialize(Model.BookingsByDayOfWeek.Select(b => b.DayOfWeek.ToString())),
+                datasets: [{
+                    label: 'Number of Bookings',
+                    data: @Json.Serialize(Model.BookingsByDayOfWeek.Select(b => b.Count)),
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}

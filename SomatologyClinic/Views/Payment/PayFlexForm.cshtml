@@ -1,0 +1,49 @@
+﻿@model PaymentViewModel
+
+<div class="container mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">PayFlex Payment (Buy Now, Pay Later)</h2>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="mb-6">
+            <p class="mb-2"><strong class="text-gray-700">Treatment:</strong> <span class="text-gray-900">@Model.TreatmentName</span></p>
+            <p class="mb-2"><strong class="text-gray-700">Date:</strong> <span class="text-gray-900">@Model.BookingDateTime.ToString("g")</span></p>
+            <p class="mb-2"><strong class="text-gray-700">Amount:</strong> <span class="text-gray-900 font-semibold">R @Model.Amount.ToString("F2")</span></p>
+        </div>
+
+        <form asp-action="ConfirmPayment" method="post">
+            <input type="hidden" asp-for="BookingId" />
+            <input type="hidden" asp-for="TreatmentName" />
+            <input type="hidden" asp-for="Amount" />
+            <input type="hidden" asp-for="BookingDateTime" />
+            <input type="hidden" asp-for="SelectedPaymentMethod" />
+
+            <!-- Add PayFlex specific fields here -->
+            <div class="mb-4">
+                <label for="payFlexToken" class="block text-gray-700 text-sm font-bold mb-2">PayFlex Token</label>
+                <input type="text" id="payFlexToken" name="PayFlexToken" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="installments" class="block text-gray-700 text-sm font-bold mb-2">Number of Installments</label>
+                <select id="installments" name="Installments" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="3">3 months</option>
+                    <option value="6">6 months</option>
+                    <option value="12">12 months</option>
+                </select>
+            </div>
+
+            <div class="mt-6">
+                <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded transition duration-200">
+                    Confirm Payment
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a asp-action="SelectPaymentMethod" asp-route-bookingId="@Model.BookingId" class="text-blue-500 hover:text-blue-600 font-semibold">
+            Back to Payment Methods
+        </a>
+    </div>
+</div>
+

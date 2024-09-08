@@ -1,0 +1,43 @@
+﻿@model IEnumerable<SomatologyClinic.Models.Treatment>
+
+@{
+    ViewData["Title"] = "Treatments";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Treatments</h1>
+
+    <p class="mb-4">
+        <a asp-action="Create" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Create New Treatment</a>
+    </p>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <table class="min-w-full">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                    <th class="px-6 py-3 border-b-2 border-gray-300"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
+                            @Html.DisplayFor(modelItem => item.Price)
+                        </td>
+                        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500 text-right">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="text-indigo-600 hover:text-indigo-900 mr-3">Details</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="text-red-600 hover:text-red-900">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

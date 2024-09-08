@@ -1,0 +1,72 @@
+﻿@{
+    ViewData["Title"] = "Welcome to Somatology Clinic";
+}
+
+<div class="bg-gray-100 font-sans">
+    <!-- Hero Section -->
+    <div class="bg-purple-700 text-white py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-4xl font-bold mb-4">Welcome to Somatology Clinic</h1>
+            <p class="text-xl mb-8">Experience the art of relaxation and rejuvenation</p>
+            <a class="nav-link text-purple-700 py-2 px-6 rounded-full text-lg font-semibold hover:bg-purple-100 transition duration-300" asp-area="" asp-controller="Appointment" asp-action="Index">Book an Appointment</a>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <div class="container mx-auto px-6 py-16">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Our Services</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            @foreach (var service in new[] { "Facial Treatments", "Body Massages", "Skin Care" })
+            {
+                <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                    <i class="fas fa-@(service.ToLower().Contains("facial") ? "face-smile" :
+                                       service.ToLower().Contains("massage") ? "hands" : "sparkles") text-purple-600 text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">@service</h3>
+                    <p class="text-gray-600">Experience our premium @service.ToLower() tailored to your needs.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="bg-purple-100 py-16">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0">
+                    <img src="/images/somatology.jpg" alt="Somatology Clinic Interior" class="rounded-lg shadow-lg">
+                </div>
+                <div class="md:w-1/2 md:pl-12">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">About Our Clinic</h2>
+                    <p class="text-gray-600 mb-4">At Somatology Clinic, we believe in providing holistic care for your body and mind. Our team of expert therapists is dedicated to helping you achieve optimal wellness and relaxation.</p>
+                    <a href="#" class="text-purple-600 font-semibold hover:text-purple-800">Learn more about us →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonials Section -->
+    <div class="container mx-auto px-6 py-16">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">What Our Clients Say</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            @foreach (var testimonial in new[] {
+            ("Sarah M.", "The facial treatment was absolutely rejuvenating! I left feeling refreshed and glowing."),
+            ("John D.", "The massage therapists here are true professionals. Best stress relief I've had in years!")
+            })
+            {
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <p class="text-gray-600 mb-4">"@testimonial.Item2"</p>
+                    <p class="font-semibold text-purple-600">- @testimonial.Item1</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="bg-purple-700 text-white py-16">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold mb-4">Ready to Experience Our Services?</h2>
+            <p class="text-xl mb-8">Book your appointment today and start your journey to wellness.</p>
+            <a href="#" class="bg-white text-purple-700 py-2 px-6 rounded-full text-lg font-semibold hover:bg-purple-100 transition duration-300">Book Now</a>
+        </div>
+    </div>
+</div>

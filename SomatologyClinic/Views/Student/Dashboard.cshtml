@@ -1,0 +1,39 @@
+﻿@model SomatologyClinic.Models.ViewModels.StudentDashboardViewModel
+
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<h2>Welcome, @Model.Student.ApplicationUser.FirstName!</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <h3>Upcoming Bookings</h3>
+        @if (Model.UpcomingBookings.Any())
+        {
+            <ul>
+                @foreach (var booking in Model.UpcomingBookings)
+                {
+                    <li>@booking.Treatment.Name - @booking.BookingDateTime.ToString("g")</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No upcoming bookings.</p>
+        }
+    </div>
+    <div class="col-md-6">
+        <h3>Student Information</h3>
+        <p>Student Number: @Model.Student.StudentNumber</p>
+        <p>Completed Treatments: @Model.CompletedTreatments</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <a asp-action="BookTreatment" class="btn btn-primary">Book a Treatment</a>
+        <a asp-action="MyBookings" class="btn btn-secondary">View My Bookings</a>
+        <a asp-action="TreatmentHistory" class="btn btn-info">View Treatment History</a>
+    </div>
+</div>

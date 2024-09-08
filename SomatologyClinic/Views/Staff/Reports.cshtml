@@ -1,0 +1,39 @@
+﻿@model RevenueReportViewModel
+@using SomatologyClinic.Models.ViewModels
+
+
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<h2>Reports</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Booking Statistics</h5>
+                <p class="card-text">View statistics about bookings, including popular treatments and busy times.</p>
+                <a href="@Url.Action("BookingStatistics")" class="btn btn-primary">View Report</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Revenue Report</h5>
+                <p class="card-text">Analyze revenue by treatment, time period, or customer.</p>
+                <a href="@Url.Action("RevenueReport")" class="btn btn-primary">View Report</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Customer Insights</h5>
+                <p class="card-text">Gain insights into customer behavior and preferences.</p>
+                <a href="@Url.Action("CustomerInsights")" class="btn btn-primary">View Report</a>
+            </div>
+        </div>
+    </div>
+</div>

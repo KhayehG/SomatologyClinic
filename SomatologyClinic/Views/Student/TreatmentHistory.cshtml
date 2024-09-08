@@ -1,0 +1,31 @@
+﻿@model IEnumerable<SomatologyClinic.Models.Booking>
+
+@{
+    ViewData["Title"] = "Treatment History";
+}
+
+<h2>Treatment History</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Treatment</th>
+            <th>Date and Time</th>
+            <th>Staff Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Treatment.Name</td>
+                <td>@item.BookingDateTime.ToString("g")</td>
+                <td>@(string.IsNullOrEmpty(item.StaffNotes) ? "No notes" : item.StaffNotes)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div>
+    <a asp-action="Dashboard" class="btn btn-secondary">Back to Dashboard</a>
+</div>
