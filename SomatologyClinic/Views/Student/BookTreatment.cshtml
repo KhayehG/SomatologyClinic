@@ -1,4 +1,4 @@
-﻿@{
+﻿@* @{
     ViewData["Title"] = "Book a Treatment";
     Layout = "_Layout";
 }
@@ -98,4 +98,189 @@
             }
         }
     </script>
+} *@
+
+@{
+    ViewData["Title"] = "Book a Treatment";
+    Layout = "_Layout";
 }
+
+<div class="container mx-auto px-4 py-8" x-data="bookingApp()">
+    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Book a Treatment</h2>
+
+    <!-- Existing content for selecting individual treatment -->
+    <div x-show="!selectedTreatment && !selectedPackage" class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h3 class="text-xl font-semibold mb-4 text-gray-700">Step 1: Select a Treatment or Package</h3>
+
+        <!-- Select Treatment -->
+        <h4 class="text-lg font-semibold mb-2 text-gray-600">Treatments</h4>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <template x-for="treatment in treatments" :key="treatment.id">
+                <div class="border rounded-lg p-4 cursor-pointer transition-all duration-200 ease-in-out flex flex-col items-center"
+                     :class="{'border-blue-500 bg-blue-50': selectedTreatment === treatment.id, 'hover:border-gray-300': selectedTreatment !== treatment.id}"
+                @@click="selectTreatment(treatment.id)">
+                    <span class="material-icons text-4xl mb-2 text-blue-600" x-text="treatment.icon || 'spa'"></span>
+                    <p class="text-sm font-medium text-gray-800 text-center" x-text="treatment.name"></p>
+                    <p class="text-sm font-medium text-gray-600 text-center" x-text="'R' + treatment.price.toFixed(2)"></p>
+                </div>
+            </template>
+        </div>
+
+        <!-- Select Special Package -->
+        <h4 class="text-lg font-semibold mb-2 text-gray-600 mt-6">Special Packages</h4>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <template x-for="package in specialPackages" :key="package.id">
+                <div class="border rounded-lg p-4 cursor-pointer transition-all duration-200 ease-in-out flex flex-col items-center"
+                     :class="{'border-green-500 bg-green-50': selectedPackage === package.id, 'hover:border-gray-300': selectedPackage !== package.id}"
+                @@click="selectPackage(package.id)">
+                    <p class="text-lg font-medium text-green-800 text-center" x-text="package.name"></p>
+                    <p class="text-sm font-medium text-gray-600 text-center" x-text="'R' + package.price.toFixed(2)"></p>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Show Booking Details for Treatment -->
+    <div x-show="selectedTreatment" class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-semibold mb-4 text-gray-700">Step 2: Select Date and Time for Treatment</h3>
+        <p class="mb-2">Selected Treatment: <span x-text="getSelectedTreatmentName()" class="font-semibold"></span></p>
+        <p class="mb-4">Price: <span x-text="'R' + getSelectedTreatmentPrice()" class="font-semibold"></span></p>
+        <button @@click="selectedTreatment = null" class="mb-4 text-blue-600 hover:text-blue-800">Change Treatment</button>
+        <input type="text"
+               x-ref="datepicker"
+               x-model="bookingDateTime"
+               class="w-full p-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Select date and time">
+        <button @@click="bookTreatment"
+                class="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                :disabled="!bookingDateTime"
+                :class="{'opacity-50 cursor-not-allowed': !bookingDateTime}">
+            Book Treatment
+        </button>
+    </div>
+
+    <!-- Show Booking Details for Special Package -->
+    <div x-show="selectedPackage" class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-semibold mb-4 text-gray-700">Step 2: Select Date and Time for Special Package</h3>
+        <p class="mb-2">Selected Package: <span x-text="getSelectedPackageName()" class="font-semibold"></span></p>
+        <p class="mb-4">Price: <span x-text="'R' + getSelectedPackagePrice()" class="font-semibold"></span></p>
+        <button @@click="selectedPackage = null" class="mb-4 text-blue-600 hover:text-blue-800">Change Package</button>
+        <input type="text"
+               x-ref="datepicker"
+               x-model="bookingDateTime"
+               class="w-full p-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Select date and time">
+        <button @@click="bookPackage"
+                class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                :disabled="!bookingDateTime"
+                :class="{'opacity-50 cursor-not-allowed': !bookingDateTime}">
+            Book Package
+        </button>
+    </div>
+
+    <form id="treatmentForm" method="post" asp-action="BookTreatment" asp-controller="Student">
+        <input type="hidden" name="TreatmentId" :value="selectedTreatment">
+        <input type="hidden" name="SpecialPackageId" :value="selectedPackage">
+        <input type="hidden" name="BookingDateTime" :value="bookingDateTime">
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+        function bookingApp() {
+            return {
+                treatments: JSON.parse('@Html.Raw(Json.Serialize(ViewBag.Treatments))'),
+                specialPackages: JSON.parse('@Html.Raw(Json.Serialize(ViewBag.SpecialPackages))'), // Added for packages
+                selectedTreatment: null,
+                selectedPackage: null,
+                bookingDateTime: null,
+                init() {
+                    this.$watch('selectedTreatment', () => {
+                        if (this.selectedTreatment) {
+                            this.$nextTick(() => {
+                                flatpickr(this.$refs.datepicker, {
+                                    enableTime: true,
+                                    dateFormat: "Y-m-d H:i",
+                                    minDate: "today",
+                                    maxDate: new Date().fp_incr(30),
+                                    minTime: "09:00",
+                                    maxTime: "17:00",
+                                    disable: [
+                                        function (date) {
+                                            return (date.getDay() === 0 || date.getDay() === 6);
+                                        }
+                                    ],
+                                    onChange: (selectedDates, dateStr) => {
+                                        this.bookingDateTime = dateStr;
+                                    }
+                                });
+                            });
+                        }
+                    });
+                    this.$watch('selectedPackage', () => {
+                        if (this.selectedPackage) {
+                            this.$nextTick(() => {
+                                flatpickr(this.$refs.datepicker, {
+                                    enableTime: true,
+                                    dateFormat: "Y-m-d H:i",
+                                    minDate: "today",
+                                    maxDate: new Date().fp_incr(30),
+                                    minTime: "09:00",
+                                    maxTime: "17:00",
+                                    disable: [
+                                        function (date) {
+                                            return (date.getDay() === 0 || date.getDay() === 6);
+                                        }
+                                    ],
+                                    onChange: (selectedDates, dateStr) => {
+                                        this.bookingDateTime = dateStr;
+                                    }
+                                });
+                            });
+                        }
+                    });
+                },
+                selectTreatment(id) {
+                    this.selectedTreatment = id;
+                    this.selectedPackage = null; // Clear package if treatment selected
+                    this.bookingDateTime = null; // Reset date when changing treatment or package
+                },
+                selectPackage(id) {
+                    this.selectedPackage = id;
+                    this.selectedTreatment = null; // Clear treatment if package selected
+                    this.bookingDateTime = null; // Reset date when changing package
+                },
+                getSelectedTreatmentName() {
+                    return this.treatments.find(t => t.id === this.selectedTreatment)?.name || '';
+                },
+                getSelectedTreatmentPrice() {
+                    return this.treatments.find(t => t.id === this.selectedTreatment)?.price.toFixed(2) || '0.00';
+                },
+                getSelectedPackageName() {
+                    return this.specialPackages.find(p => p.id === this.selectedPackage)?.name || '';
+                },
+                getSelectedPackagePrice() {
+                    return this.specialPackages.find(p => p.id === this.selectedPackage)?.price.toFixed(2) || '0.00';
+                },
+                bookTreatment() {
+                    if (this.selectedTreatment && this.bookingDateTime) {
+                        document.getElementById('treatmentForm').submit();
+                    } else {
+                        alert('Please select a treatment and date/time.');
+                    }
+                },
+                bookPackage() {
+                    if (this.selectedPackage && this.bookingDateTime) {
+                        document.getElementById('treatmentForm').submit();
+                    } else {
+                        alert('Please select a package and date/time.');
+                    }
+                }
+            }
+        }
+    </script>
+}
+

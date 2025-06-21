@@ -20,7 +20,10 @@ namespace SomatologyClinic.Models
 
         public ICollection<Appointment> Appointments { get; set; }
         public ICollection<Booking> Bookings { get; set; }
+        //mutliple booking
+        //public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
+       
         public string Icon { get; set; }  
 
     }

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using SomatologyClinic.Data;
 using SomatologyClinic.Services;
+using SomatologyClinic.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,15 +18,21 @@ builder.Services.AddHttpClient<IPaymentService, PaymentService>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders()
-    .AddDefaultUI(); // Add this line to enable the default UI for Identity
+    .AddDefaultUI();
 
 // Uncomment and update these lines when you're ready to use these services
 // builder.Services.AddScoped<AppointmentService>();
 // builder.Services.AddScoped<TreatmentService>();
 // builder.Services.AddScoped<PaymentService>();
 
+builder.Services.AddScoped<IPaymentService, UnifiedPaymentGateway>();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+// Add email configuration
+//builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+//builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
@@ -67,7 +75,7 @@ using (var scope = app.Services.CreateScope())
         await dbInitializer.SeedAdminUserAsync();
         await dbInitializer.SeedTreatmentsAsync();
         await dbInitializer.SeedStaffMemberAsync();
-
+        await dbInitializer.SeedManagerMemberAsync();
     }
     catch (Exception ex)
     {

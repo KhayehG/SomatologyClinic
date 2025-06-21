@@ -10,74 +10,274 @@
             <p class="mb-2"><strong class="text-gray-700">Amount:</strong> <span class="text-gray-900 font-semibold">R @Model.Amount.ToString("F2")</span></p>
         </div>
 
-        <form asp-action="ProcessPayment" method="post">
+        <div id="paymentMethodSelection">
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="payment-option cursor-pointer p-4 border rounded hover:bg-gray-100" data-method="GooglePay">
+                    <img width="48" height="48" src="https://img.icons8.com/fluency/48/google-pay.png" alt="Google Pay" class="w-16 h-16 mx-auto mb-2">
+                    <p class="text-center">Google Pay</p>
+                </div>
+                <div class="payment-option cursor-pointer p-4 border rounded hover:bg-gray-100" data-method="ApplePay">
+                    <img width="50" height="50" src="https://img.icons8.com/ios/50/apple-pay.png" alt="Apple Pay" class="w-16 h-16 mx-auto mb-2">
+                    <p class="text-center">Apple Pay</p>
+                </div>
+                <div class="payment-option cursor-pointer p-4 border rounded hover:bg-gray-100" data-method="PayFast">
+                    <img src="~/images/Payfast.jpg" alt="PayFast" class="w-16 h-16 mx-auto mb-2 object-contain">
+                    <p class="text-center">PayFast</p>
+                </div>
+                <div class="payment-option cursor-pointer p-4 border rounded hover:bg-gray-100" data-method="PayFlex">
+                    <img src="~/images/Payflex.jpg" alt="PayFlex" class="w-16 h-16 mx-auto mb-2 object-contain">
+                    <p class="text-center">PayFlex</p>
+                </div>
+            </div>
+        </div>
+
+        <form id="paymentForm" asp-action="ProcessPayment" method="post">
             <input type="hidden" asp-for="BookingId" />
-            <input type="hidden" asp-for="TreatmentName" />
-            <input type="hidden" asp-for="Amount" />
-            <input type="hidden" asp-for="BookingDateTime" />
+            <input type="hidden" asp-for="SelectedPaymentMethod" id="selectedPaymentMethod" />
+            <input type="hidden" asp-for="CardType" id="cardType" />
+            <input type="hidden" asp-for="LastFour" id="lastFour" />
 
-            <div class="mb-4">
-                <label asp-for="SelectedPaymentMethod" class="block text-gray-700 text-sm font-bold mb-2">Payment Method</label>
-                <select asp-for="SelectedPaymentMethod" class="form-select mt-1 block w-full" required>
-                    <option value="">Select a payment method</option>
-                    <option value="GooglePay">Google Pay</option>
-                    <option value="ApplePay">Apple Pay</option>
-                    <option value="PayFast">PayFast</option>
-                    <option value="PayFlex">PayFlex (Buy Now, Pay Later)</option>
-                    <option value="Cash">Cash (Test)</option>
-                </select>
+            <div id="googlePayFlow" class="hidden">
+                <div id="googleAccount" class="mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Enter Google Account</h3>
+                    <input type="email" id="googleEmail" class="w-full p-2 border rounded" placeholder="Enter your Gmail address">
+                    <button type="button" id="continueToCard" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Continue</button>
+                </div>
+
+                <div id="cardSelection" class="hidden mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Select or Add Card</h3>
+                    <select id="savedCards" class="w-full p-2 border rounded mb-4">
+                        <option value="">Select a saved card</option>
+                        <option value="visa_1234">Visa ending in 1234</option>
+                        <option value="mastercard_5678">Mastercard ending in 5678</option>
+                        <option value="new">Add a new card</option>
+                    </select>
+                    <div id="newCardForm" class="hidden">
+                        <input type="text" id="cardNumber" class="w-full p-2 border rounded mb-2" placeholder="Card Number">
+                        <div class="flex gap-2">
+                            <input type="text" id="expiryDate" class="w-1/2 p-2 border rounded" placeholder="MM/YY">
+                            <input type="text" id="cvv" class="w-1/2 p-2 border rounded" placeholder="CVV">
+                        </div>
+                    </div>
+                    <button type="button" id="payNowGoogle" class="mt-4 bg-green-500 text-white px-4 py-2 rounded">Pay Now</button>
+                </div>
             </div>
 
-            <div id="paymentTokenField" class="mb-4 hidden">
-                <label asp-for="PaymentToken" class="block text-gray-700 text-sm font-bold mb-2">Payment Token</label>
-                <input asp-for="PaymentToken" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            <div id="applePayFlow" class="hidden">
+                <h3 class="text-xl font-semibold mb-4">Apple Pay</h3>
+                <p>Click the button below to pay with Apple Pay</p>
+                <button type="button" id="applePayButton" class="mt-4 bg-black text-white px-4 py-2 rounded">Pay with Apple Pay</button>
             </div>
 
-            <div id="installmentsField" class="mb-4 hidden">
-                <label asp-for="Installments" class="block text-gray-700 text-sm font-bold mb-2">Number of Installments</label>
-                <select asp-for="Installments" class="form-select mt-1 block w-full">
-                    <option value="3">3 months</option>
-                    <option value="6">6 months</option>
-                    <option value="12">12 months</option>
-                </select>
+            <div id="payFastFlow" class="hidden">
+                <h3 class="text-xl font-semibold mb-4">PayFast</h3>
+                <p>You will be redirected to PayFast to complete your payment.</p>
+                <button type="button" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Proceed to PayFast</button>
             </div>
 
-            <div class="mt-6">
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded transition duration-200">
-                    Proceed with Payment
-                </button>
+            <div id="payFlexFlow" class="hidden">
+                <h3 class="text-xl font-semibold mb-4">PayFlex</h3>
+                <div class="mb-4">
+                    <label for="installments" class="block text-gray-700 text-sm font-bold mb-2">Number of Installments</label>
+                    <select id="installments" name="Installments" class="w-full p-2 border rounded">
+                        <option value="3">3 months</option>
+                        <option value="6">6 months</option>
+                        <option value="12">12 months</option>
+                    </select>
+                </div>
+                <button type="button" class="mt-4 bg-purple-500 text-white px-4 py-2 rounded">Pay with PayFlex</button>
             </div>
         </form>
-    </div>
 
-    <div class="mt-6 text-center">
-        <a asp-controller="Student" asp-action="SelectTreatment" class="text-blue-500 hover:text-blue-600 font-semibold">
-            Back to Treatment Selection
-        </a>
+        <div id="paymentStatus" class="mt-6 text-center hidden">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p id="paymentStatusText" class="text-lg font-semibold"></p>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const paymentMethodSelect = document.getElementById('SelectedPaymentMethod');
-            const paymentTokenField = document.getElementById('paymentTokenField');
-            const installmentsField = document.getElementById('installmentsField');
+            const paymentMethodSelection = document.getElementById('paymentMethodSelection');
+            const googlePayFlow = document.getElementById('googlePayFlow');
+            const googleAccount = document.getElementById('googleAccount');
+            const cardSelection = document.getElementById('cardSelection');
+            const applePayFlow = document.getElementById('applePayFlow');
+            const payFastFlow = document.getElementById('payFastFlow');
+            const payFlexFlow = document.getElementById('payFlexFlow');
+            const selectedPaymentMethod = document.getElementById('selectedPaymentMethod');
+            const savedCards = document.getElementById('savedCards');
+            const newCardForm = document.getElementById('newCardForm');
+            const continueToCard = document.getElementById('continueToCard');
+            const payNowGoogle = document.getElementById('payNowGoogle');
+            const paymentStatus = document.getElementById('paymentStatus');
+            const paymentStatusText = document.getElementById('paymentStatusText');
+            const cardNumber = document.getElementById('cardNumber');
+            const expiryDate = document.getElementById('expiryDate');
+            const cvv = document.getElementById('cvv');
 
-            paymentMethodSelect.addEventListener('change', function () {
-                if (this.value === 'GooglePay' || this.value === 'ApplePay' || this.value === 'PayFast') {
-                    paymentTokenField.classList.remove('hidden');
-                } else {
-                    paymentTokenField.classList.add('hidden');
-                }
+           
 
-                if (this.value === 'PayFlex') {
-                    installmentsField.classList.remove('hidden');
-                } else {
-                    installmentsField.classList.add('hidden');
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.addEventListener('click', function () {
+                    const method = this.dataset.method;
+                    selectedPaymentMethod.value = method;
+
+                    // Hide all payment flows
+                    [googlePayFlow, applePayFlow, payFastFlow, payFlexFlow].forEach(flow => flow.classList.add('hidden'));
+
+                    // Show selected payment flow
+                    switch (method) {
+                        case 'GooglePay':
+                            googlePayFlow.classList.remove('hidden');
+                            break;
+                        case 'ApplePay':
+                            applePayFlow.classList.remove('hidden');
+                            break;
+                        case 'PayFast':
+                            payFastFlow.classList.remove('hidden');
+                            break;
+                        case 'PayFlex':
+                            payFlexFlow.classList.remove('hidden');
+                            break;
+                    }
+                });
+            });
+
+            // Google Pay flow
+            const googleEmail = document.getElementById('googleEmail');
+            const emailError = document.createElement('p');
+            emailError.classList.add('text-red-500', 'text-sm', 'mt-1', 'hidden');
+            googleEmail.parentNode.insertBefore(emailError, googleEmail.nextSibling);
+
+            continueToCard.addEventListener('click', function () {
+                if (validateGoogleEmail()) {
+                    googleAccount.classList.add('hidden');
+                    cardSelection.classList.remove('hidden');
                 }
             });
+
+            function validateGoogleEmail() {
+                const email = googleEmail.value.trim();
+                if (!gmailRegex.test(email)) {
+                  
+                    emailError.classList.remove('hidden');
+                    return false;
+                } else {
+                    emailError.classList.add('hidden');
+                    return true;
+                }
+            }
+
+            googleEmail.addEventListener('input', function () {
+                if (googleEmail.value.trim() !== '') {
+                    validateGoogleEmail();
+                } else {
+                    emailError.classList.add('hidden');
+                }
+            });
+
+            savedCards.addEventListener('change', function () {
+                if (this.value === 'new') {
+                    newCardForm.classList.remove('hidden');
+                } else {
+                    newCardForm.classList.add('hidden');
+                }
+            });
+
+            // Add event listeners for all payment buttons
+            document.querySelectorAll('#payNowGoogle, #applePayButton, #payFastFlow button, #payFlexFlow button').forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const method = this.closest('[id$="Flow"]').id.replace('Flow', '');
+                    if (method === 'GooglePay' && !validateCardDetails()) {
+                        return;
+                    }
+                    processPayment(method);
+                });
+            });
+
+            function processPayment(method) {
+                paymentStatus.classList.remove('hidden');
+                paymentStatusText.textContent = 'Processing payment...';
+
+                const form = document.getElementById('paymentForm');
+                const formData = new FormData(form);
+                formData.set('SelectedPaymentMethod', method);
+
+                if (method === 'GooglePay') {
+                    formData.set('CardType', savedCards.value === 'new' ? detectCardType(cardNumber.value) : savedCards.value.split('_')[0]);
+                    formData.set('LastFour', savedCards.value === 'new' ? cardNumber.value.slice(-4) : savedCards.value.split('_')[1]);
+                }
+
+                if (method === 'PayFlex') {
+                    formData.set('Installments', document.getElementById('installments').value);
+                }
+
+                // Simulate a successful payment every time
+                setTimeout(() => {
+                    paymentStatusText.textContent = 'Payment successful!';
+                    paymentStatusText.classList.add('text-green-600');
+                    setTimeout(() => {
+                        document.getElementById('cardType').value = formData.get('CardType') || 'N/A';
+                        document.getElementById('lastFour').value = formData.get('LastFour') || 'N/A';
+                        form.submit();
+                    }, 1500);
+                }, 2000);
+            }
+
+            // Add input masking for credit card fields
+            cardNumber.addEventListener('input', function (e) {
+                this.value = this.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
+            });
+
+            expiryDate.addEventListener('input', function (e) {
+                this.value = this.value.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '$1/$2').substr(0, 5);
+            });
+
+            cvv.addEventListener('input', function (e) {
+                this.value = this.value.replace(/\D/g, '').substr(0, 3);
+            });
+
+            function validateCardDetails() {
+                const cardNumberValue = cardNumber.value.replace(/\s/g, '');
+                const expiryDateValue = expiryDate.value;
+                const cvvValue = cvv.value;
+
+                if (cardNumberValue.length < 13 || cardNumberValue.length > 19) {
+                    alert('Invalid card number length. It should be between 13 and 19 digits.');
+                    return false;
+                }
+
+                if (!/^\d{2}\/\d{2}$/.test(expiryDateValue)) {
+                    alert('Invalid expiry date. It should be in MM/YY format.');
+                    return false;
+                }
+
+                if (cvvValue.length < 3 || cvvValue.length > 4) {
+                    alert('Invalid CVV. It should be 3 or 4 digits.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            function detectCardType(number) {
+                var re = {
+                    visa: /^4[0-9]{12}(?:[0-9]{3})?$/,
+                    mastercard: /^5[1-5][0-9]{14}$/,
+                    amex: /^3[47][0-9]{13}$/,
+                    discover: /^6(?:011|5[0-9]{2})[0-9]{12}$/
+                };
+
+                for (var key in re) {
+                    if (re[key].test(number.replace(/\s/g, ''))) {
+                        return key;
+                    }
+                }
+                return "unknown";
+            }
         });
     </script>
 }
-

@@ -26,7 +26,6 @@ namespace SomatologyClinic.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
 
         public RegisterModel(
@@ -35,7 +34,6 @@ namespace SomatologyClinic.Areas.Identity.Pages.Account
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            RoleManager<IdentityRole> roleManager,
             ApplicationDbContext context)
         {
             _userManager = userManager;
@@ -44,7 +42,6 @@ namespace SomatologyClinic.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
-            _roleManager = roleManager;
             _context = context;
         }
 
@@ -115,148 +112,92 @@ namespace SomatologyClinic.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            try
+            returnUrl ??= Url.Content("~/");
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            if (!ModelState.IsValid)
             {
-                returnUrl ??= Url.Content("~/");
-                ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+                var user = CreateUser();
 
-                string userType = DetermineUserType(Input.Email);
-                _logger.LogInformation($"Attempting to register user of type {userType}");
+                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                user.FirstName = Input.FirstName;
+                user.LastName = Input.LastName;
 
-                // Remove validation errors for fields that are not relevant to the current user type
-                foreach (var key in ModelState.Keys.ToList())
+                var result = await _userManager.CreateAsync(user, Input.Password);
+
+                if (result.Succeeded)
                 {
-                    if ((userType != "Student" && key.StartsWith("Input.Student")) ||
-                        (userType != "Staff" && key.StartsWith("Input.Staff")) ||
-                        (userType != "Customer" && key.StartsWith("Input.Customer")))
+                    _logger.LogInformation("User created a new account with password.");
+
+                    string userType = DetermineUserType(Input.Email);
+                    await _userManager.AddToRoleAsync(user, userType);
+
+                    switch (userType)
                     {
-                        ModelState.Remove(key);
+                        case Roles.Student:
+                            var student = new Student
+                            {
+                                ApplicationUserId = user.Id,
+                                DateOfBirth = Input.DateOfBirth ?? DateTime.Now,
+                                Gender = Input.Gender ?? "Not Specified",
+                                StudentNumber = Input.StudentNumber ?? "Not Assigned",
+                                RegistrationDate = DateTime.Now,
+                                IsActive = true
+                            };
+                            _context.Students.Add(student);
+                            break;
+                        case Roles.Staff:
+                            var staff = new Staff
+                            {
+                                ApplicationUserId = user.Id,
+                                StaffId = Input.StaffId ?? "Not Assigned",
+                                Department = Input.Department ?? "Not Assigned"
+                            };
+                            _context.Staffs.Add(staff);
+                            break;
+                        case Roles.Customer:
+                            var customer = new Customer
+                            {
+                                ApplicationUserId = user.Id,
+                                PhoneNumber = Input.PhoneNumber ?? "Not Provided",
+                                Address = Input.Address ?? "Not Provided"
+                            };
+                            _context.Customers.Add(customer);
+                            break;
                     }
-                }
 
-                if (ModelState.IsValid)
-                {
-                    var user = new ApplicationUser
+                    await _context.SaveChangesAsync();
+                    var userId = await _userManager.GetUserIdAsync(user);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmail",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                        protocol: Request.Scheme);
+
+                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        UserName = Input.Email,
-                        Email = Input.Email,
-                        FirstName = Input.FirstName,
-                        LastName = Input.LastName
-                    };
-
-                    var result = await _userManager.CreateAsync(user, Input.Password);
-
-                    if (result.Succeeded)
-                    {
-                        _logger.LogInformation($"User created a new account with password. User ID: {user.Id}");
-
-                        switch (userType)
-                        {
-                            case "Student":
-                                var student = new Student
-                                {
-                                    ApplicationUserId = user.Id,
-                                    DateOfBirth = Input.DateOfBirth ?? DateTime.Now,
-                                    Gender = Input.Gender ?? "Not Specified",
-                                    StudentNumber = Input.StudentNumber ?? "Not Assigned",
-                                    RegistrationDate = DateTime.Now,
-                                    IsActive = true
-                                };
-                                await _userManager.AddToRoleAsync(user, "Student");
-                                _context.Students.Add(student);
-                                break;
-                            case "Staff":
-                                var staff = new Staff
-                                {
-                                    ApplicationUserId = user.Id,
-                                    StaffId = Input.StaffId ?? "Not Assigned",
-                                    Department = Input.Department ?? "Not Assigned"
-                                };
-                                await _userManager.AddToRoleAsync(user, "Staff");
-                                _context.Staffs.Add(staff);
-                                break;
-                            default: // Customer
-                                var customer = new Customer
-                                {
-                                    ApplicationUserId = user.Id,
-                                    PhoneNumber = Input.PhoneNumber ?? "Not Provided",
-                                    Address = Input.Address ?? "Not Provided"
-                                };
-                                await _userManager.AddToRoleAsync(user, "Customer");
-                                _context.Customers.Add(customer);
-                                break;
-                        }
-
-                        await _context.SaveChangesAsync();
-                        _logger.LogInformation($"Successfully created {userType} entity for user with ID {user.Id}");
-
-                        var userId = await _userManager.GetUserIdAsync(user);
-                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        var callbackUrl = Url.Page(
-                            "/Account/ConfirmEmail",
-                            pageHandler: null,
-                            values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                            protocol: Request.Scheme);
-
-                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                        {
-                            return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                        }
-                        else
-                        {
-                            await _signInManager.SignInAsync(user, isPersistent: false);
-                            return LocalRedirect(returnUrl);
-                        }
+                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
                     else
                     {
-                        foreach (var error in result.Errors)
-                        {
-                            ModelState.AddModelError(string.Empty, error.Description);
-                            _logger.LogError($"User creation error: {error.Description}");
-                        }
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        return LocalRedirect(returnUrl);
                     }
                 }
-                else
+                foreach (var error in result.Errors)
                 {
-                    foreach (var modelState in ModelState.Values)
-                    {
-                        foreach (var error in modelState.Errors)
-                        {
-                            _logger.LogError($"Model validation error: {error.ErrorMessage}");
-                        }
-                    }
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
+            }
 
-                // If we got this far, something failed, redisplay form
-                return Page();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Exception during registration: {ex.Message}");
-                ModelState.AddModelError(string.Empty, "An error occurred during registration. Please try again.");
-                return Page();
-            }
-        }
-
-        private string DetermineUserType(string email)
-        {
-            if (email.EndsWith("@dut4life.ac.za", StringComparison.OrdinalIgnoreCase))
-            {
-                return "Student";
-            }
-            else if (email.EndsWith("@dut.ac.za", StringComparison.OrdinalIgnoreCase))
-            {
-                return "Staff";
-            }
-            else
-            {
-                return "Customer";
-            }
+            // If we got this far, something failed, redisplay form
+            return Page();
         }
 
         private ApplicationUser CreateUser()
@@ -280,6 +221,22 @@ namespace SomatologyClinic.Areas.Identity.Pages.Account
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
             return (IUserEmailStore<ApplicationUser>)_userStore;
+        }
+
+        private string DetermineUserType(string email)
+        {
+            if (email.EndsWith("@dut4life.ac.za", StringComparison.OrdinalIgnoreCase))
+            {
+                return Roles.Student;
+            }
+            else if (email.EndsWith("@dut.ac.za", StringComparison.OrdinalIgnoreCase))
+            {
+                return Roles.Staff;
+            }
+            else
+            {
+                return Roles.Customer;
+            }
         }
     }
 }

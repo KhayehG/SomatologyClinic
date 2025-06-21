@@ -1,0 +1,71 @@
+﻿@model RevenueReportViewModel
+@using SomatologyClinic.Models.ViewModels
+
+<h2>Revenue Report</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Total Revenue</h5>
+                <p class="card-text display-4">@Model.TotalRevenue.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h3>Revenue by Treatment</h3>
+        <canvas id="revenueByTreatmentChart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <h3>Revenue by Month</h3>
+        <canvas id="revenueByMonthChart"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Revenue by Treatment Chart
+        var revenueByTreatmentCtx = document.getElementById('revenueByTreatmentChart').getContext('2d');
+        var revenueByTreatmentChart = new Chart(revenueByTreatmentCtx, {
+            type: 'pie',
+            data: {
+                labels: @Json.Serialize(Model.RevenueByTreatment.Select(r => r.TreatmentName)),
+                datasets: [{
+                    data: @Json.Serialize(Model.RevenueByTreatment.Select(r => r.Revenue)),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(153, 102, 255, 0.6)'
+                    ]
+                }]
+            }
+        });
+
+        // Revenue by Month Chart
+        var revenueByMonthCtx = document.getElementById('revenueByMonthChart').getContext('2d');
+        var revenueByMonthChart = new Chart(revenueByMonthCtx, {
+            type: 'bar',
+            data: {
+                labels: @Json.Serialize(Model.RevenueByMonth.Select(r => $"{r.Year}-{r.Month:D2}")),
+                datasets: [{
+                    label: 'Revenue',
+                    data: @Json.Serialize(Model.RevenueByMonth.Select(r => r.Revenue)),
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}

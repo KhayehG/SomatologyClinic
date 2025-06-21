@@ -1,0 +1,54 @@
+﻿@model PaymentConfirmationViewModel
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6 max-w-md mx-auto">
+        <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Payment Confirmation</h2>
+
+        <div class="mb-6 text-center">
+            <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <p class="text-xl font-semibold text-gray-700 mt-4">Payment Successful!</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="flex justify-between">
+                <span class="font-semibold text-gray-600">Payment ID:</span>
+                <span class="text-gray-800">@Model.PaymentId</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold text-gray-600">Treatment:</span>
+                <span class="text-gray-800">@Model.TreatmentName</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold text-gray-600">Amount:</span>
+                <span class="text-gray-800">R @Model.Amount.ToString("F2")</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold text-gray-600">Date:</span>
+                <span class="text-gray-800">@Model.PaymentDate.ToString("g")</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold text-gray-600">Method:</span>
+                <span class="text-gray-800">@Model.PaymentMethod</span>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.CardType) && !string.IsNullOrEmpty(Model.LastFour))
+            {
+                <div class="flex justify-between">
+                    <span class="font-semibold text-gray-600">Card:</span>
+                    <span class="text-gray-800">@Model.CardType ending in @Model.LastFour</span>
+                </div>
+            }
+            <div class="flex justify-between">
+                <span class="font-semibold text-gray-600">Transaction ID:</span>
+                <span class="text-gray-800">@Model.TransactionId</span>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="@Url.Action("Index", "Home")" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                Return to Home
+            </a>
+        </div>
+    </div>
+</div>

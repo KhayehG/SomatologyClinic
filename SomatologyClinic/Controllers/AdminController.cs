@@ -247,4 +247,4 @@ namespace SomatologyClinic.Controllers
 
 
     }
-    }
+}

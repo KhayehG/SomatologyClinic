@@ -7,5 +7,6 @@ namespace SomatologyClinic.Models
         public const string Customer = "Customer";
         public const string Staff = "Staff";
         public const string Student = "Student";
+        public const string Manager = "Manager";
     }
 }

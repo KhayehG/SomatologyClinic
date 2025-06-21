@@ -7,6 +7,8 @@ using SomatologyClinic.Data;
 using SomatologyClinic.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using SomatologyClinic.Models.ViewModels;
+
 
 namespace SomatologyClinic.Controllers
 {
@@ -22,6 +24,8 @@ namespace SomatologyClinic.Controllers
             _userManager = userManager;
         }
 
+
+
         // GET: Booking
         public async Task<IActionResult> Index()
         {
@@ -33,17 +37,19 @@ namespace SomatologyClinic.Controllers
                 .ToListAsync();
             return View(bookings);
         }
+        
 
-        // GET: Booking/Create
+
+        //// GET: Booking/Create
         public IActionResult Create()
         {
             ViewData["TreatmentId"] = new SelectList(_context.Treatments, "Id", "Name");
             return View();
         }
 
-        // POST: Booking/Create
+        //// POST: Booking/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
+       [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("TreatmentId,BookingDateTime")] Booking booking)
         {
             if (!ModelState.IsValid)
@@ -63,7 +69,7 @@ namespace SomatologyClinic.Controllers
 
 
         // GET: Booking/ManageBookings (for staff)
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Staff,Manager")]
         public async Task<IActionResult> ManageBookings()
         {
             var bookings = await _context.Bookings
@@ -109,7 +115,50 @@ namespace SomatologyClinic.Controllers
             return View(bookings);
         }
 
+        /// <summary>
+        /// ///////
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult CreateMultipleBookings()
+        {
+            // Provide a list of all treatments to the view
+            ViewBag.Treatments = new SelectList(_context.Treatments, "Id", "Name");
+            return View();
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateMultipleBookings(MultipleBookingViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                // Create multiple bookings for selected treatments
+                foreach (var treatmentId in model.SelectedTreatmentIds)
+                {
+                    var booking = new Booking
+                    {
+                        TreatmentId = treatmentId,
+                        BookingDateTime = model.BookingDateTime,
+                        UserId = user.Id,
+                        Status = BookingStatus.Pending,
+                        LastUpdatedBy = user.UserName,
+                        LastUpdatedAt = DateTime.UtcNow
+                    };
+
+                    _context.Bookings.Add(booking);
+                }
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+
+            // If the model state is invalid, return to the view
+            ViewBag.Treatments = new SelectList(_context.Treatments, "Id", "Name");
+            return View(model);
+        }
 
 
     }

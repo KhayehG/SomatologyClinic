@@ -9,6 +9,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Treatment</th>
             <th>Date and Time</th>
             <th>Staff Notes</th>
@@ -18,6 +19,7 @@
         @foreach (var item in Model)
         {
             <tr>
+                <td>@item.Treatment.Id</td>
                 <td>@item.Treatment.Name</td>
                 <td>@item.BookingDateTime.ToString("g")</td>
                 <td>@(string.IsNullOrEmpty(item.StaffNotes) ? "No notes" : item.StaffNotes)</td>

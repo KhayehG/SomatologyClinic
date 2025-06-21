@@ -11,7 +11,7 @@ using SomatologyClinic.Models.ViewModels;
 
 namespace SomatologyClinic.Controllers
 {
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Staff,Manager")]
     public class StaffController : Controller
     {
         private readonly ApplicationDbContext _context;

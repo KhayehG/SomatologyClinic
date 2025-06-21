@@ -12,8 +12,8 @@ using SomatologyClinic.Data;
 namespace SomatologyClinic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240907101921_AddIconsONE")]
-    partial class AddIconsONE
+    [Migration("20240919075359_newdgdrfghj")]
+    partial class newdgdrfghj
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,31 +158,6 @@ namespace SomatologyClinic.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Payment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Payments");
-                });
-
             modelBuilder.Entity("SomatologyClinic.Data.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -281,7 +256,8 @@ namespace SomatologyClinic.Migrations
 
                     b.HasIndex("TreatmentId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Appointments");
                 });
@@ -304,6 +280,9 @@ namespace SomatologyClinic.Migrations
                         .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("StaffNotes")
                         .HasMaxLength(500)
@@ -363,6 +342,56 @@ namespace SomatologyClinic.Migrations
                     b.ToTable("Customers", (string)null);
                 });
 
+            modelBuilder.Entity("SomatologyClinic.Models.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CardType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastFour")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("SomatologyClinic.Models.Staff", b =>
                 {
                     b.Property<string>("Id")
@@ -399,6 +428,7 @@ namespace SomatologyClinic.Migrations
             modelBuilder.Entity("SomatologyClinic.Models.Student", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ApplicationUserId")
@@ -516,17 +546,6 @@ namespace SomatologyClinic.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Payment", b =>
-                {
-                    b.HasOne("SomatologyClinic.Data.ApplicationUser", "ApplicationUser")
-                        .WithMany("Payments")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationUser");
-                });
-
             modelBuilder.Entity("SomatologyClinic.Models.Appointment", b =>
                 {
                     b.HasOne("SomatologyClinic.Models.Treatment", "Treatment")
@@ -578,6 +597,25 @@ namespace SomatologyClinic.Migrations
                         .HasForeignKey("ApplicationUserId1");
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("SomatologyClinic.Models.Payment", b =>
+                {
+                    b.HasOne("SomatologyClinic.Models.Booking", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SomatologyClinic.Data.ApplicationUser", "ApplicationUser")
+                        .WithMany("Payments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Booking");
                 });
 
             modelBuilder.Entity("SomatologyClinic.Models.Staff", b =>

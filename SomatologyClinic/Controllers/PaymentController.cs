@@ -2,11 +2,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SomatologyClinic.Data;
 using SomatologyClinic.Models;
 using SomatologyClinic.Models.ViewModels;
-using System.Threading.Tasks;
 using SomatologyClinic.Services;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SomatologyClinic.Controllers
 {
@@ -15,20 +18,26 @@ namespace SomatologyClinic.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IPaymentService _paymentService;
+        private readonly ILogger<PaymentController> _logger;
 
-        public PaymentController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IPaymentService paymentService)
+        public PaymentController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, ILogger<PaymentController> logger)
         {
-            _context = context;
-            _userManager = userManager;
-            _paymentService = paymentService;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<IActionResult> SelectPaymentMethod(int bookingId)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
             var booking = await _context.Bookings
                 .Include(b => b.Treatment)
-                .FirstOrDefaultAsync(b => b.Id == bookingId);
+                .FirstOrDefaultAsync(b => b.Id == bookingId && b.UserId == user.Id);
 
             if (booking == null)
             {
@@ -46,34 +55,32 @@ namespace SomatologyClinic.Controllers
             return View(viewModel);
         }
 
+
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProcessPayment(PaymentViewModel model)
         {
-            if (!ModelState.IsValid)
+            _logger.LogInformation($"Payment for BookingId: {model.BookingId}");
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
-                return View("SelectPaymentMethod", model);
+                _logger.LogWarning("User not found");
+                return Json(new { success = false, message = "User not found" });
             }
 
             var booking = await _context.Bookings
                 .Include(b => b.Treatment)
-                .FirstOrDefaultAsync(b => b.Id == model.BookingId);
+                .FirstOrDefaultAsync(b => b.Id == model.BookingId && b.UserId == user.Id);
 
             if (booking == null)
             {
-                return NotFound();
+                _logger.LogWarning($"Booking not found for BookingId: {model.BookingId} and UserId: {user.Id}");
+                return Json(new { success = false, message = "Booking not found" });
             }
 
-            var paymentResult = await _paymentService.ProcessPayment(
-                model.SelectedPaymentMethod,
-                booking.Treatment.Price,
-                "ZAR",
-                booking.Id.ToString(),
-                model.PaymentToken,
-                model.Installments);
-
-            if (paymentResult.Success)
+            try
             {
-                var user = await _userManager.GetUserAsync(User);
                 var payment = new Payment
                 {
                     UserId = user.Id,
@@ -81,37 +88,60 @@ namespace SomatologyClinic.Controllers
                     Amount = booking.Treatment.Price,
                     PaymentDate = DateTime.UtcNow,
                     PaymentMethod = model.SelectedPaymentMethod,
-                    TransactionId = paymentResult.TransactionId,
-                    Status = "Completed"
+                    TransactionId = Guid.NewGuid().ToString(),
+                    Status = "Completed",
+                    CardType = model.CardType ?? "N/A",
+                    LastFour = model.LastFour ?? "N/A"
                 };
 
                 _context.Payments.Add(payment);
                 booking.Status = BookingStatus.Approved;
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = "Payment successful. Your booking has been confirmed.";
-                return RedirectToAction("MyBookings", "Student");
+                _logger.LogInformation($"Payment successful for BookingId: {booking.Id}, PaymentId: {payment.Id}");
+
+                return RedirectToAction("PaymentConfirmation", new { paymentId = payment.Id });
             }
-            else
+            catch (Exception ex)
             {
-                ModelState.AddModelError("", paymentResult.Message);
-                return View("SelectPaymentMethod", model);
+                _logger.LogError(ex, $"Error processing payment for BookingId: {model.BookingId}");
+                return View("Error");
             }
         }
 
+
         public async Task<IActionResult> PaymentConfirmation(int paymentId)
         {
-            var payment = await _context.Payments
-                .Include(p => p.Booking)
-                .ThenInclude(b => b.Treatment)
-                .FirstOrDefaultAsync(p => p.Id == paymentId);
-
-            if (payment == null)
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
                 return NotFound();
             }
 
-            return View(payment);
+            var payment = await _context.Payments
+                .Include(p => p.Booking)
+                .ThenInclude(b => b.Treatment)
+                .FirstOrDefaultAsync(p => p.Id == paymentId && p.UserId == user.Id);
+
+            if (payment == null)
+            {
+                _logger.LogWarning($"Payment not found for PaymentId: {paymentId} and UserId: {user.Id}");
+                return NotFound();
+            }
+
+            var viewModel = new PaymentConfirmationViewModel
+            {
+                PaymentId = payment.Id,
+                TreatmentName = payment.Booking.Treatment.Name,
+                Amount = payment.Amount,
+                PaymentDate = payment.PaymentDate,
+                PaymentMethod = payment.PaymentMethod,
+                CardType = payment.CardType,
+                LastFour = payment.LastFour,
+                TransactionId = payment.TransactionId
+            };
+
+            return View(viewModel);
         }
     }
 }

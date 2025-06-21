@@ -102,50 +102,228 @@ namespace SomatologyClinic.Controllers
                 icon = string.IsNullOrEmpty(t.Icon) ? "spa" : t.Icon  // Default icon if not set
             }).ToList();
 
+           
+
             ViewBag.Treatments = treatments;
+            ViewBag.SpecialPackages = _context.SpecialPackages.ToList();
+
             return View();
         }
 
 
-        // POST: Student/BookTreatment
+        //// POST: Student/BookTreatment
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> BookTreatment(int TreatmentId, DateTime BookingDateTime)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        var user = await _userManager.GetUserAsync(User);
+        //        var treatment = await _context.Treatments.FindAsync(TreatmentId);
+        //        if (treatment == null)
+        //        {
+        //            return NotFound();
+        //        }
+
+        //        var booking = new Booking
+        //        {
+        //            UserId = user.Id,
+        //            TreatmentId = TreatmentId,
+        //            BookingDateTime = BookingDateTime,
+        //            Status = BookingStatus.Pending,
+        //            LastUpdatedBy = user.UserName,
+        //            LastUpdatedAt = DateTime.UtcNow,
+        //            Price = treatment.Price  // Add this line to store the price at the time of booking
+        //        };
+        //        _context.Add(booking);
+        //        await _context.SaveChangesAsync();
+        //        return RedirectToAction("SelectPaymentMethod", "Payment", new { bookingId = booking.Id });
+        //        //return RedirectToAction(nameof(Dashboard));
+        //    }
+        //    // If we got this far, something failed; redisplay form
+        //    var treatments = _context.Treatments.Select(t => new
+        //    {
+        //        id = t.Id,
+        //        name = t.Name,
+        //        price = t.Price,
+        //        icon = t.Icon  // Now using the Icon from the database
+        //    }).ToList();
+        //    ViewBag.Treatments = treatments;
+        //    return View();
+        //}
+
+        // POST: Student/BookTreatment//////
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> BookTreatment(int? TreatmentId, int? SpecialPackageId, DateTime BookingDateTime)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        var user = await _userManager.GetUserAsync(User);
+
+        //        // Initialize booking
+        //        var booking = new Booking
+        //        {
+        //            UserId = user.Id,
+        //            BookingDateTime = BookingDateTime,
+        //            Status = BookingStatus.Pending,
+        //            LastUpdatedBy = user.UserName,
+        //            LastUpdatedAt = DateTime.UtcNow
+        //        };
+
+        //        if (TreatmentId.HasValue) // If booking is for an individual treatment
+        //        {
+        //            var treatment = await _context.Treatments.FindAsync(TreatmentId);
+        //            if (treatment == null)
+        //            {
+        //                return NotFound();
+        //            }
+
+        //            booking.TreatmentId = TreatmentId.Value;
+        //            booking.Price = treatment.Price; // Store treatment price at booking
+        //        }
+        //        else if (SpecialPackageId.HasValue) // If booking is for a special package
+        //        {
+        //            var specialPackage = await _context.SpecialPackages
+        //                                    .Include(sp => sp.Treatments)
+        //                                    .FirstOrDefaultAsync(sp => sp.Id == SpecialPackageId.Value);
+        //            if (specialPackage == null)
+        //            {
+        //                return NotFound();
+        //            }
+
+        //            booking.SpecialPackageId = SpecialPackageId.Value;
+        //            booking.Price = specialPackage.Price;
+        //            // Store special package price at booking
+
+
+
+        //            // You may also store the individual treatments as part of the booking if needed
+        //            foreach (var treatment in specialPackage.Treatments)
+        //            {
+        //                //booking.Bookings.Add(new Booking
+        //                var individualBooking = new Booking
+        //                {
+        //                    UserId = user.Id,
+        //                    TreatmentId = treatment.Id,
+        //                    BookingDateTime = BookingDateTime, // You can adjust this if needed per treatment
+        //                    Status = BookingStatus.Pending,
+        //                    LastUpdatedBy = user.UserName,
+        //                    LastUpdatedAt = DateTime.UtcNow,
+        //                    Price = treatment.Price
+        //                };
+        //            }
+        //        }
+
+        //        _context.Add(booking);
+        //        await _context.SaveChangesAsync();
+
+        //        return RedirectToAction("SelectPaymentMethod", "Payment", new { bookingId = booking.Id });
+        //    }
+
+        //    // If we got this far, something failed; redisplay the form
+        //    var treatments = _context.Treatments.Select(t => new
+        //    {
+        //        id = t.Id,
+        //        name = t.Name,
+        //        price = t.Price,
+        //        icon = t.Icon  // Now using the Icon from the database
+        //    }).ToList();
+
+        //    ViewBag.Treatments = treatments;
+        //    return View();
+        //}//////////////
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BookTreatment(int TreatmentId, DateTime BookingDateTime)
+        public async Task<IActionResult> BookTreatment(int? TreatmentId, int? SpecialPackageId, DateTime BookingDateTime)
         {
             if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
-                var treatment = await _context.Treatments.FindAsync(TreatmentId);
-                if (treatment == null)
-                {
-                    return NotFound();
-                }
 
+                // Initialize booking
                 var booking = new Booking
                 {
                     UserId = user.Id,
-                    TreatmentId = TreatmentId,
                     BookingDateTime = BookingDateTime,
                     Status = BookingStatus.Pending,
                     LastUpdatedBy = user.UserName,
-                    LastUpdatedAt = DateTime.UtcNow,
-                    Price = treatment.Price  // Add this line to store the price at the time of booking
+                    LastUpdatedAt = DateTime.UtcNow
                 };
-                _context.Add(booking);
+
+                if (TreatmentId.HasValue) // If booking is for an individual treatment
+                {
+                    var treatment = await _context.Treatments.FindAsync(TreatmentId);
+                    if (treatment == null)
+                    {
+                        return NotFound($"The treatment with ID {TreatmentId} does not exist."); // Treatment not found
+                    }
+
+                    booking.TreatmentId = TreatmentId.Value;
+                    booking.Price = treatment.Price; // Store treatment price at booking
+                }
+                else if (SpecialPackageId.HasValue) // If booking is for a special package
+                {
+                    var specialPackage = await _context.SpecialPackages
+                                          .Include(sp => sp.Treatments) // Ensure treatments are included
+                                          .FirstOrDefaultAsync(sp => sp.Id == SpecialPackageId.Value);
+
+                    if (specialPackage == null)
+                    {
+                        return NotFound($"The special package with ID {SpecialPackageId} does not exist."); // Special package not found
+                    }
+                    booking.TreatmentId = null;
+                    // Store the special package booking details
+                    booking.SpecialPackageId = SpecialPackageId.Value;
+                    booking.Price = specialPackage.Price; // Store the price of the package
+
+                    // Add this special package booking to the context
+                    _context.Bookings.Add(booking);
+
+                    // Save the booking for the special package
+                    await _context.SaveChangesAsync();
+
+                    // Now create individual bookings for each treatment in the package
+                    //foreach (var treatment in specialPackage.Treatments)
+                    //{
+                    //    var individualTreatmentBooking = new Booking
+                    //    {
+                    //        UserId = user.Id,
+                    //        TreatmentId = treatment.Id,
+                    //        BookingDateTime = BookingDateTime, // Adjust this date if needed
+                    //        Status = BookingStatus.Pending,
+                    //        LastUpdatedBy = user.UserName,
+                    //        LastUpdatedAt = DateTime.UtcNow,
+                    //        Price = treatment.Price // Store treatment price
+                    //    };
+
+                    //    // Add the individual treatment booking to the context
+                    //    _context.Bookings.Add(individualTreatmentBooking);
+                    //}
+                }
+
+                // Save all the bookings (package and individual treatments) to the database
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Dashboard));
+
+                return RedirectToAction("SelectPaymentMethod", "Payment", new { bookingId = booking.Id });
             }
-            // If we got this far, something failed; redisplay form
+
+            // If we got this far, something failed; redisplay the form
             var treatments = _context.Treatments.Select(t => new
             {
                 id = t.Id,
                 name = t.Name,
                 price = t.Price,
-                icon = t.Icon  // Now using the Icon from the database
+                icon = t.Icon // Now using the Icon from the database
             }).ToList();
+
             ViewBag.Treatments = treatments;
             return View();
         }
+
+
+
 
 
 

@@ -1,0 +1,20 @@
+﻿
+@model SelectTherapistViewModel
+
+<h2>Select Therapist</h2>
+
+<form asp-action="AssignTherapist" method="post">
+    <div class="form-group">
+        <label for="TherapistId">Therapist</label>
+        <select asp-for="TherapistId" class="form-control" asp-items="Model.Therapists">
+            <option value="">-- Select Therapist --</option>
+            @foreach (var therapist in Model.Therapists)
+            {
+                <option value="@therapist.Value">@therapist.Text</option>
+            }
+        </select>
+    </div>
+    <input type="hidden" asp-for="BookingId" />
+    <button type="submit" class="btn btn-primary">Assign Therapist</button>
+</form>
+

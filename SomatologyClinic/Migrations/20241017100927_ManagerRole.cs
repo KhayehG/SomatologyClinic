@@ -5,7 +5,7 @@
 namespace SomatologyClinic.Migrations
 {
     /// <inheritdoc />
-    public partial class thisnewnullforbooking : Migration
+    public partial class ManagerRole : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

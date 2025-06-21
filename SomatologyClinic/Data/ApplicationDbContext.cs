@@ -18,43 +18,61 @@ namespace SomatologyClinic.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Treatment> Treatments { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Therapist> Therapists { get; set; }
+        public DbSet<SpecialPackage> SpecialPackages { get; set; } // Added SpecialPackage
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
+            // Student Configuration
             builder.Entity<Student>(entity =>
             {
                 entity.ToTable("Students");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.HasIndex(e => e.StudentNumber).IsUnique();
+                entity.HasIndex(e => e.ApplicationUserId).IsUnique();
                 entity.HasOne(s => s.ApplicationUser)
                     .WithOne()
                     .HasForeignKey<Student>(s => s.ApplicationUserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+
+            // Staff Configuration
             builder.Entity<Staff>(entity =>
             {
                 entity.ToTable("Staffs");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.HasIndex(e => e.StaffId).IsUnique();
+                entity.HasIndex(e => e.ApplicationUserId).IsUnique();
                 entity.HasOne(s => s.ApplicationUser)
                     .WithOne()
                     .HasForeignKey<Staff>(s => s.ApplicationUserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Customer Configuration
             builder.Entity<Customer>(entity =>
             {
                 entity.ToTable("Customers");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.HasIndex(e => e.PhoneNumber);
+                entity.HasIndex(e => e.ApplicationUserId).IsUnique();
                 entity.HasOne(c => c.ApplicationUser)
                     .WithOne()
                     .HasForeignKey<Customer>(c => c.ApplicationUserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Appointment Configuration
             builder.Entity<Appointment>(entity =>
             {
+                entity.HasIndex(e => e.UserId).IsUnique();
                 entity.HasOne(a => a.User)
                     .WithMany(u => u.Appointments)
                     .HasForeignKey(a => a.UserId)
@@ -66,6 +84,7 @@ namespace SomatologyClinic.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // Payment Configuration
             builder.Entity<Payment>(entity =>
             {
                 entity.Property(p => p.Amount).HasColumnType("decimal(18,2)");
@@ -75,6 +94,7 @@ namespace SomatologyClinic.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // Treatment Configuration
             builder.Entity<Treatment>(entity =>
             {
                 entity.Property(t => t.Price).HasColumnType("decimal(18,2)");
@@ -88,8 +108,11 @@ namespace SomatologyClinic.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            
 
-        builder.Entity<Booking>(entity =>
+
+            // Booking Configuration
+            builder.Entity<Booking>(entity =>
             {
                 entity.HasKey(b => b.Id);
 
@@ -123,5 +146,7 @@ namespace SomatologyClinic.Data
                 entity.HasIndex(b => b.BookingDateTime);
             });
         }
+
+
     }
 }

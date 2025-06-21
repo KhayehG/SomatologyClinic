@@ -1,4 +1,4 @@
-﻿@model SomatologyClinic.Models.Booking
+﻿@* @model SomatologyClinic.Models.Booking
 
 @{
     ViewData["Title"] = "Book Treatment";
@@ -29,6 +29,54 @@
                 </button>
                 <a asp-action="Index" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
                     Back to List
+                </a>
+            </div>
+        </form>
+    </div>
+</div>  
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+ *@
+
+ @model SomatologyClinic.Models.Booking
+
+@{
+    ViewData["Title"] = "Book Treatment";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Book a Treatment</h1>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4"></div>
+
+            <div class="mb-4">
+                <label asp-for="TreatmentId" class="block text-gray-700 text-sm font-bold mb-2">Treatment</label>
+                <select asp-for="TreatmentId" class="form-select mt-1 block w-full" asp-items="ViewBag.TreatmentId"></select>
+                <span asp-validation-for="TreatmentId" class="text-red-500 text-xs italic"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="BookingDateTime" class="block text-gray-700 text-sm font-bold mb-2">Booking Date and Time</label>
+                <input asp-for="BookingDateTime" class="form-input mt-1 block w-full" type="datetime-local" />
+                <span asp-validation-for="BookingDateTime" class="text-red-500 text-xs italic"></span>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Book Treatment
+                </button>
+                <a asp-action="Index" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                    Back to List
+                </a>
+                <!-- Add this button to redirect to multiple booking view -->
+                <a asp-action="CreateMultipleBookings" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                    Book Multiple Treatments
                 </a>
             </div>
         </form>

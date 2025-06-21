@@ -20,7 +20,7 @@ namespace SomatologyClinic.Data
 
         public async Task SeedRolesAsync()
         {
-            string[] roleNames = { "Admin", "Student", "Staff", "Customer" };
+            string[] roleNames = { "Admin", "Student", "Staff", "Customer","Manager" };
 
             foreach (var roleName in roleNames)
             {
@@ -158,7 +158,29 @@ namespace SomatologyClinic.Data
                 }
             }
         }
+        public async Task SeedManagerMemberAsync()
+        {
+            var managerEmail = "Manager01@dut.ac.za";
+            var managerUser = await _userManager.FindByEmailAsync(managerEmail);
+            if(managerUser == null)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = managerEmail,
+                    Email = managerEmail,
+                    FirstName = "Manager",
+                    LastName = "Manager",
+                    EmailConfirmed = true
+                };
 
+                var result = await _userManager.CreateAsync(user, "ManagerPassword123!");
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, "Manager");
 
+                }
+            }
+
+        }
     }
 }

@@ -7,6 +7,11 @@
         public DateTime BookingDateTime { get; set; }
         public BookingStatus Status { get; set; }
         public decimal Price { get; set; }
+
+        //public List<int> SelectedTreatmentIds { get; set; }
     }
+
+    
+    
 
 }

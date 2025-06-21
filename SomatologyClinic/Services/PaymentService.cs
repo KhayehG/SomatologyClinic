@@ -11,6 +11,7 @@ namespace SomatologyClinic.Services
         Task<PaymentResult> ProcessPayment(string method, decimal amount, string currency, string orderId, string token, int? installments = null);
     }
 
+
     public class PaymentService : IPaymentService
     {
         private readonly HttpClient _httpClient;

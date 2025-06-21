@@ -1,0 +1,28 @@
+﻿@model IEnumerable<Booking>
+
+<h2>Bookings</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
+            <th>Date</th>
+            <th>Therapist Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.BookingDateTime</td>
+                <td>@item.TherapistId</td>
+                
+                <td>
+                    <a asp-action="SelectTherapist" asp-route-id="@item.Id" class="btn btn-primary">Select Therapist</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

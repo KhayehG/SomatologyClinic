@@ -7,6 +7,7 @@ namespace SomatologyClinic.Models
     public class Customer
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
 
         [Required]
@@ -23,5 +24,7 @@ namespace SomatologyClinic.Models
         [Required]
         [Display(Name = "Address")]
         public string Address { get; set; }
+
+        
     }
 }

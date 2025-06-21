@@ -1,0 +1,50 @@
+﻿@model List<SomatologyClinic.Models.ViewModels.BookingCalendarViewModel>
+@{
+    ViewData["Title"] = "Booking Calendar";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">My Calendars</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <input type="checkbox" id="allBookings" checked>
+                            <label for="allBookings">All Bookings</label>
+                        </li>
+                        <!-- Add more calendar options as needed -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: @Json.Serialize(Model),
+                eventClick: function (info) {
+                    // Handle event click
+                    alert('Booking: ' + info.event.title);
+                }
+            });
+            calendar.render();
+        });
+    </script>
+}

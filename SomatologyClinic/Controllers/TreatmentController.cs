@@ -5,6 +5,8 @@ using SomatologyClinic.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using SomatologyClinic.Models.ViewModels;
 
 namespace SomatologyClinic.Controllers
 {
@@ -12,17 +14,22 @@ namespace SomatologyClinic.Controllers
     public class TreatmentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public TreatmentController(ApplicationDbContext context)
+
+        public TreatmentController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // GET: Treatment
+        //// GET: Treatment
         public async Task<IActionResult> Index()
         {
             return View(await _context.Treatments.ToListAsync());
         }
+
+
 
         // GET: Treatment/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -41,6 +48,9 @@ namespace SomatologyClinic.Controllers
 
             return View(treatment);
         }
+        
+
+
 
         // GET: Treatment/Create
         public IActionResult Create()
@@ -53,8 +63,9 @@ namespace SomatologyClinic.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Price,Duration")] Treatment treatment)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
+                treatment.Icon = string.IsNullOrEmpty(treatment.Icon) ? "spa" : treatment.Icon;
                 _context.Add(treatment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -146,3 +157,5 @@ namespace SomatologyClinic.Controllers
         }
     }
 }
+
+

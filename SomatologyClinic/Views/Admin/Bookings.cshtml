@@ -17,6 +17,7 @@
             <table class="min-w-full">
                 <thead>
                     <tr>
+                        <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
                         <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                         <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Treatment</th>
                         <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm leading-4 font-medium text-gray-500 uppercase tracking-wider">Date and Time</th>
@@ -29,6 +30,10 @@
                     @foreach (var item in Model)
                     {
                         <tr>
+                            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
+                                @Html.DisplayFor(modelItem => item.User.Id)
+                            </td>
+
                             <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
                                 @Html.DisplayFor(modelItem => item.User.UserName)
                             </td>
